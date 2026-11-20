@@ -634,6 +634,40 @@ evaluate serverless when it meets completion and data freshness
 requirements. Use performance-optimized modes where faster execution is
 operationally necessary.
 
+**Illustrative workload comparison — 100 successful batch runs**
+
+The following example demonstrates how to compare the complete cost of
+the same workload on classic and serverless compute. It uses synthetic
+figures, not Databricks pricing or measured customer results.
+
+| Cost and performance measure | Classic compute | Serverless compute |
+|---|---:|---:|
+| Databricks DBU / serverless usage charges | $140 | $310 |
+| Customer-managed Azure VM charges | $210 | Not separately provisioned by the customer |
+| Other applicable Azure services | $20 | $20 |
+| **Illustrative total** | **$370** | **$330** |
+| Successful runs | 100 | 100 |
+| Average runtime per successful run | 48 minutes | 39 minutes |
+| **Cost per successful run** | **$3.70** | **$3.30** |
+
+Under these assumptions, serverless is approximately 10.8% lower in
+illustrative total cost and completes the workload faster. That result
+is specific to this example; it is not evidence that serverless is
+always cheaper. The serverless usage charge already represents its
+applicable managed-compute billing model, so a customer-managed worker
+VM charge is not added to that column. The same illustrative amount for
+other applicable services is included in both columns to keep the
+comparison boundary consistent.
+
+For a production benchmark, use the same input volume, code, output
+requirements, concurrency, region, runtime conditions and success
+criteria. Compare repeated runs rather than a single execution, use the
+same contracted or invoiced pricing basis for both options, and include
+retries and relevant dependent services. Confirm that each option meets
+the same SLA and data-freshness requirement. If the workloads use shared
+resources, document the allocation method rather than presenting an
+estimated allocation as a directly measured charge.
+
 ### Pattern 2: The Hybrid Spot Worker Strategy
 
 For eligible classic compute workloads, use a hybrid approach where the
@@ -945,7 +979,12 @@ should be held accountable against budgets.
 
 Those questions require a governed cost model that connects consumption
 to teams, projects and cost centres, together with showback and
-chargeback practices. AI/BI dashboards, Genie and Agentic AI can then
+chargeback practices. The distinction is important: workload-level
+engineering attribution helps explain resource behavior, while financial
+allocation determines which business owner is accountable for direct and
+shared expenditure. The latter needs agreed ownership mappings, allocation
+drivers and finance-approved policies; it should not be inferred from
+compute telemetry alone. AI/BI dashboards, Genie and Agentic AI can then
 help stakeholders explore budget variances, investigate cost leakage and
 route evidence-backed recommendations to accountable owners.
 
@@ -1041,22 +1080,23 @@ FinOps.
 The following Microsoft, Databricks and FinOps Foundation documentation supports the engineering and compute guidance in this article. Feature availability, pricing and preview status can change; readers should recheck the relevant page for their Azure region, workspace plan and SKU before implementation.
 
 1. [Azure Databricks — Compute selection recommendations](https://learn.microsoft.com/en-us/azure/databricks/compute/choose-compute)
-2. [Azure Databricks — Configure compute for jobs](https://learn.microsoft.com/en-us/azure/databricks/jobs/compute)
-3. [Azure Databricks — Connect to serverless compute and review requirements](https://learn.microsoft.com/en-us/azure/databricks/compute/serverless)
-4. [Azure Databricks — Monitor costs using system tables](https://learn.microsoft.com/en-us/azure/databricks/admin/usage/system-tables)
-5. [Azure Databricks — Billable usage system table reference](https://learn.microsoft.com/en-us/azure/databricks/admin/system-tables/billing)
-6. [Azure Databricks — Pricing system table reference](https://learn.microsoft.com/en-us/azure/databricks/admin/system-tables/pricing)
-7. [Azure Databricks — Compute system tables reference](https://learn.microsoft.com/en-us/azure/databricks/admin/system-tables/compute)
-8. [Azure Databricks — What is Photon?](https://learn.microsoft.com/en-us/azure/databricks/compute/photon)
-9. [Azure Databricks — Use Liquid Clustering for tables](https://learn.microsoft.com/en-us/azure/databricks/tables/clustering)
-10. [Azure Databricks — Predictive Optimization for Unity Catalog managed tables](https://learn.microsoft.com/en-us/azure/databricks/optimizations/predictive-optimization)
-11. [Azure Databricks — Predictive Optimization system table reference](https://learn.microsoft.com/en-us/azure/databricks/admin/system-tables/predictive-optimization)
-12. [Microsoft Azure — Azure Databricks pricing](https://azure.microsoft.com/en-us/pricing/details/databricks/)
-13. [Microsoft Azure — Azure Spot Virtual Machines](https://learn.microsoft.com/en-us/azure/virtual-machines/spot-vms)
-14. [Microsoft Azure — Create and manage Cost Management exports](https://learn.microsoft.com/en-us/azure/cost-management-billing/costs/tutorial-improved-exports)
-15. [FinOps Foundation — FinOps Framework](https://www.finops.org/framework/)
-16. [Azure Databricks — System tables reference and access controls](https://learn.microsoft.com/en-us/azure/databricks/admin/system-tables/)
-17. [Azure Databricks — Delta feature compatibility and protocols](https://learn.microsoft.com/en-us/azure/databricks/tables/features/feature-compatibility)
+2. [Azure Databricks — Best practices for cost optimization](https://learn.microsoft.com/en-us/azure/databricks/lakehouse-architecture/cost-optimization/best-practices)
+3. [Azure Databricks — Configure compute for jobs](https://learn.microsoft.com/en-us/azure/databricks/jobs/compute)
+4. [Azure Databricks — Connect to serverless compute and review requirements](https://learn.microsoft.com/en-us/azure/databricks/compute/serverless)
+5. [Azure Databricks — Monitor costs using system tables](https://learn.microsoft.com/en-us/azure/databricks/admin/usage/system-tables)
+6. [Azure Databricks — Billable usage system table reference](https://learn.microsoft.com/en-us/azure/databricks/admin/system-tables/billing)
+7. [Azure Databricks — Pricing system table reference](https://learn.microsoft.com/en-us/azure/databricks/admin/system-tables/pricing)
+8. [Azure Databricks — Compute system tables reference](https://learn.microsoft.com/en-us/azure/databricks/admin/system-tables/compute)
+9. [Azure Databricks — What is Photon?](https://learn.microsoft.com/en-us/azure/databricks/compute/photon)
+10. [Azure Databricks — Use Liquid Clustering for tables](https://learn.microsoft.com/en-us/azure/databricks/tables/clustering)
+11. [Azure Databricks — Predictive Optimization for Unity Catalog managed tables](https://learn.microsoft.com/en-us/azure/databricks/optimizations/predictive-optimization)
+12. [Azure Databricks — Predictive Optimization system table reference](https://learn.microsoft.com/en-us/azure/databricks/admin/system-tables/predictive-optimization)
+13. [Microsoft Azure — Azure Databricks pricing](https://azure.microsoft.com/en-us/pricing/details/databricks/)
+14. [Microsoft Azure — Azure Spot Virtual Machines](https://learn.microsoft.com/en-us/azure/virtual-machines/spot-vms)
+15. [Microsoft Azure — Create and manage Cost Management exports](https://learn.microsoft.com/en-us/azure/cost-management-billing/costs/tutorial-improved-exports)
+16. [FinOps Foundation — FinOps Framework](https://www.finops.org/framework/)
+17. [Azure Databricks — System tables reference and access controls](https://learn.microsoft.com/en-us/azure/databricks/admin/system-tables/)
+18. [Azure Databricks — Delta feature compatibility and protocols](https://learn.microsoft.com/en-us/azure/databricks/tables/features/feature-compatibility)
 
 ---
 

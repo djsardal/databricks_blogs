@@ -42,24 +42,49 @@ The objective of a FinOps solution is to bridge these gaps—not merely to produ
 
 ### Four Capabilities That Make FinOps Actionable
 
-The solution brings together four complementary capabilities:
+The solution connects one consumption dimension with three visibility and intelligence layers:
 
-| Capability | Role in the FinOps solution |
+| Component | Role in the FinOps solution |
 |---|---|
-| Serverless and classic compute | Provide distinct consumption dimensions that can be attributed to workloads, teams and budgets |
-| AI/BI dashboards | Provide a trusted view of actuals, budgets, trends, ownership, allocations and exceptions |
-| Genie | Let stakeholders explore governed cost and usage information using natural language |
-| Agentic AI | Investigate anomalies, connect cost signals to likely causes, and recommend corrective actions for human review |
+| Serverless and classic compute | Consumption models whose usage and cost must be attributed to workloads, teams and budgets |
+| AI/BI dashboards | The reporting layer for actuals, budgets, trends, ownership, allocations and exceptions |
+| Genie | The natural-language interface for exploring governed cost and usage information |
+| Agentic AI | The investigation and recommendation layer for connecting cost signals to likely causes and accountable owners |
 
-These capabilities are not competing products or separate FinOps initiatives. They form a connected operating model: measure consumption, make it understandable, assign accountability, investigate exceptions and follow through on actions.
+These are not competing products or separate FinOps initiatives. They form a connected operating model: measure consumption, make it understandable, assign accountability, investigate exceptions and follow through on actions.
+
+Databricks already provides important building blocks for this approach:
+billing and usage system tables, usage tags, cost and budget controls,
+AI/BI dashboards, Genie, and Agent-based solution patterns. The article
+does not claim that combining dashboards, Genie and an Agent is itself a
+new product or a wholly new idea. The additional solution proposed here
+is the financial accountability layer around those capabilities:
+reconciling platform and cloud costs, mapping them to an organization's
+budget hierarchy, handling direct/shared/unallocated expenditure,
+validating allocation rules, and supporting showback and chargeback
+across teams. The companion starter kit is intended to make that
+organizational layer reusable rather than asking each customer to start
+from a blank page.
 
 ### Serverless and Classic Compute: Make the Mix Visible and Accountable
 
 Serverless and classic compute are complementary operating models, not competing FinOps philosophies. Serverless can help reduce avoidable provisioned capacity and infrastructure-management overhead for suitable workloads. Classic compute remains important for workloads that require specific configuration, control or runtime characteristics, and can be economically appropriate when capacity is consistently utilized.
 
-The detailed engineering decision—when to choose serverless, when to retain classic compute, and how to benchmark their cost and performance—is covered in the companion article **“Beyond DBUs: Understanding and Optimizing the True Cost of Azure Databricks.”** This article takes the next step: making the consumption mix visible by workspace, workload, environment and accountable team, so that the organization can understand who is using each model, how spend is changing, and whether the choice aligns with the approved budget.
+The detailed engineering decision—when to choose serverless, when to retain classic compute, and how to benchmark their cost and performance—is covered in the companion article **“Beyond DBUs: Understanding and Optimizing the True Cost of Azure Databricks.”** That article includes an illustrative, like-for-like workload comparison to show how a team should assess total cost rather than assume that either model is cheaper. This article takes the next step: making the consumption mix visible by workspace, workload, environment and accountable team, so that the organization can understand who is using each model, how spend is changing, and whether the choice aligns with the approved budget.
 
 Serverless should therefore appear in the FinOps model as both an optimization opportunity and a consumption dimension that must be attributed. It should not be assumed to be cheaper in every situation, nor should classic compute be treated as waste by default.
+
+Databricks' native serverless cost controls are also part of the
+foundation, not something the starter kit needs to recreate. Current
+Databricks guidance describes usage-policy tags, billing system tables,
+access controls and budget alerts as mechanisms for attribution and
+governance, with additional controls such as rate limits and shared
+budgets evolving over time. These controls help govern Databricks
+consumption. The broader solution extends the view to cloud-provider
+charges, organizational budget hierarchies, shared-service allocation
+and finance-approved chargeback. Verify feature availability and
+rollout status in the target cloud and workspace before relying on a
+particular control.
 
 ------------------------------------------------------------------------
 
@@ -204,6 +229,30 @@ A practical progression is:
 
 Chargeback should be explainable and repeatable. Teams must be able to understand which resources were charged, which costs were directly attributed, which were allocated, and what allocation driver was used.
 
+**Illustrative monthly showback-to-chargeback example**
+
+Assume the reconciled platform cost for a month is $100,000. Of this,
+$65,000 can be directly attributed to teams, $25,000 relates to shared
+services, and $10,000 does not yet have reliable ownership evidence.
+The shared-service allocation below uses measured consumption as an
+agreed allocation driver.
+
+| Cost component | Team A | Team B | Unallocated / central review | Total |
+|---|---:|---:|---:|---:|
+| Directly attributable cost | $40,000 | $25,000 | — | $65,000 |
+| Shared cost allocation (60% / 40%) | $15,000 | $10,000 | — | $25,000 |
+| Ownership not yet established | — | — | $10,000 | $10,000 |
+| **Showback position** | **$55,000** | **$35,000** | **$10,000** | **$100,000** |
+
+If Team A's approved budget is $50,000 and Team B's is $40,000, the
+showback view indicates a $5,000 variance above budget for Team A and
+$5,000 below budget for Team B. The $10,000 unallocated amount remains
+visible for investigation; it is not silently distributed to either
+team. Only after the ownership mapping and 60/40 allocation driver have
+been reviewed and approved should the organization apply the formal
+chargeback policy. The example illustrates an allocation method, not a
+universal rule or a substitute for finance approval.
+
 ### Principle 3: Make Budget Exceptions Actionable
 
 A budget alert should provide enough context to start an investigation:
@@ -223,6 +272,19 @@ This is where AI/BI and Agentic AI move FinOps from retrospective reporting towa
 ## 5. Step 3: Make FinOps Actionable with AI/BI, Genie and Agentic AI
 
 The solution has three complementary interaction layers. Each has a distinct responsibility and should be built on the same governed cost and usage foundation.
+
+Databricks has also published a FinOps Genie solution pattern that
+combines system tables, AI/BI dashboards, Genie and an Agent Bricks
+knowledge agent. That material is an important reference point: it
+demonstrates how platform cost observability can be turned into
+policy-grounded optimization guidance. The published session describes
+budget forecasting, anomaly and spike detection, chargeback logic and
+contracted-price modeling as areas for further evolution in the
+profiled implementation. This article deliberately concentrates on
+that next financial-accountability step—connecting reconciled cost to
+organizational budgets, direct/shared allocation and team-level
+showback/chargeback—rather than claiming the dashboard-Genie-Agent
+combination as a new concept.
 
 - **AI/BI dashboards — Inform:** show what is happening, where the budget is going and who owns the consumption.
 - **Genie — Explore:** allow users to ask questions and understand the drivers behind the numbers.
@@ -404,6 +466,8 @@ The following official references support the Databricks usage, AI consumption a
 
 ### Databricks Billing and Compute
 
+- [Smarter cost controls for serverless](https://www.databricks.com/blog/smarter-cost-controls-serverless)
+- [Use tags to attribute and track usage](https://learn.microsoft.com/en-us/azure/databricks/admin/account-settings/usage-detail-tags)
 - [Monitor the cost of serverless compute](https://learn.microsoft.com/en-us/azure/databricks/admin/system-tables/serverless-billing)
 - [Monitor costs using system tables](https://learn.microsoft.com/en-us/azure/databricks/admin/usage/system-tables)
 - [Billable usage system table reference](https://learn.microsoft.com/en-us/azure/databricks/admin/system-tables/billing)
@@ -418,6 +482,9 @@ The following official references support the Databricks usage, AI consumption a
 
 ### FinOps and Cloud Billing
 
+- [Databricks FinOps Genie — Cost Observability Meets Optimization Insights](https://www.databricks.com/dataaisummit/session/databricks-finops-genie-cost-observability-meets-optimization-insights)
+- [FinOps Framework — Allocation](https://framework.finops.org/framework/capabilities/allocation/)
+- [Microsoft FinOps — Invoicing and chargeback](https://learn.microsoft.com/en-us/cloud-computing/finops/framework/manage/invoicing-chargeback)
 - [Databricks cost management tools](https://learn.microsoft.com/en-us/azure/databricks/admin/usage/)
 - [Azure Cost Management exports](https://learn.microsoft.com/en-us/azure/cost-management-billing/costs/tutorial-export-acm-data)
 - [AWS Data Exports](https://docs.aws.amazon.com/cur/latest/userguide/what-is-data-exports.html)
@@ -432,6 +499,17 @@ The following official references support the Databricks usage, AI consumption a
 ## Companion GitHub Starter Kit (Optional)
 
 The article describes the FinOps solution and operating model. A companion GitHub repository can provide a practical starter kit for customers who want to adapt the approach to their own Databricks and cloud environments.
+
+The starter kit should complement—not duplicate—native Databricks
+capabilities. Customers should continue to use Databricks system tables,
+usage tags, native budgets and access controls, and the supported AI/BI,
+Genie and Agent capabilities where they meet the requirement. The
+reusable layer should focus on what is organization-specific:
+reconciling provider financial data, maintaining business ownership
+mappings, defining budget hierarchies, applying transparent shared-cost
+allocation, and producing finance-ready showback/chargeback views. The
+repository should document which inputs come from native platform
+capabilities and which are derived by the reference model.
 
 The repository can contain:
 
