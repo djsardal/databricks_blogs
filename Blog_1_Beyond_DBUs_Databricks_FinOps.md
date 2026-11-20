@@ -881,143 +881,77 @@ Databricks engineering.
 
 ```mermaid
 flowchart LR
-    A["INFORM<br>Make cost visible"] --> B["OPTIMIZE<br>Improve workload efficiency"]
-    B --> C["OPERATE<br>Embed governance"]
+    A["INFORM<br>Make workload cost visible"] --> B["OPTIMIZE<br>Improve workload efficiency"]
+    B --> C["OPERATE<br>Embed engineering governance"]
     C --> A
 ```
 
-### Principle 1: Inform -- Make Cost Visible
+### Principle 1: Inform -- Make Workload Cost Visible
 
-Engineering teams should understand the cost of their workloads. This
-includes:
+Engineering teams should be able to understand the cost and behavior of
+the workloads they operate. Useful measures include:
 
--   Cost per job.
--   Cost per successful run.
--   Cost per team and project.
--   Cost per workspace.
--   DBU consumption.
--   Cloud infrastructure expenditure.
--   Monthly spending trends.
+- DBU consumption by workspace, SKU and workload.
+- Cloud infrastructure expenditure associated with the platform.
+- Cost per job and cost per successful run, where attribution is reliable.
+- Runtime, utilization, failure and retry trends.
+- Changes in consumption compared with an agreed baseline.
 
-An **AI/BI dashboard** can bring these measures together for engineering
-leads, platform owners, and finance teams. It should show trend and
-variance, cost by workspace and owner, top jobs and compute resources,
-DBU versus Azure infrastructure expenditure, cost per successful run,
-and failed-run or retry trends. Where data is available, include Genie
-and AI model consumption as distinct cost dimensions.
-
-The dashboard should make the anti-patterns in this article visible:
-idle compute in utilization and runtime views; repeated failures in job
-reliability and cost-per-success views; oversized warehouses in
-utilization and query activity; and Genie usage separately from the
-warehouse compute executing its generated SQL. Build it on curated
-billing, query-history, compute, and Azure Cost Management data.
-Document allocation rules for shared resources, and label list-price
-estimates separately from contracted or invoiced costs.
+The purpose of this engineering view is diagnostic: it helps identify
+which workload or compute behavior deserves investigation. Financial
+reporting, business-unit budget ownership, team showback and formal
+chargeback require additional business dimensions and allocation rules.
+Those are separate from the workload-level optimization techniques in
+this article.
 
 ### Principle 2: Optimize -- Improve Engineering Efficiency
 
-Once expenditure is visible, teams should identify the causes of
-unnecessary resource consumption.
+Once expenditure and workload behavior are visible, teams should
+identify the causes of unnecessary resource consumption.
 
 Examples include:
 
--   Oversized compute.
--   Idle resources.
--   Inefficient Spark execution.
--   Unnecessary full refreshes.
--   Excessive table maintenance.
--   Poor workload scheduling.
+- Oversized compute.
+- Idle resources.
+- Inefficient Spark execution.
+- Unnecessary full refreshes.
+- Excessive table maintenance.
+- Poor workload scheduling.
 
-### Principle 3: Operate -- Introduce Continuous Governance
+### Principle 3: Operate -- Introduce Continuous Engineering Governance
 
 Optimization should not depend on occasional manual reviews.
 
 Introduce:
 
--   Compute policies.
--   Mandatory resource tagging.
--   Appropriate auto-termination.
--   Workload-specific compute configurations.
--   Budget thresholds.
--   Automated cost alerts.
--   Periodic workload benchmarking.
+- Compute policies.
+- Mandatory resource tagging and workload ownership metadata.
+- Appropriate auto-termination.
+- Workload-specific compute configurations.
+- Budget thresholds and usage alerts.
+- Periodic workload benchmarking.
+- Recurring reviews of cost, performance and reliability.
 
 The goal is to make cost awareness part of development, deployment, and
 operational reviews.
 
-### Extending FinOps with Genie and Agentic AI
+### Extending Engineering FinOps into Financial Accountability
 
-Cost visibility does not have to stop at dashboards. A governed
-**FinOps Agent** can help engineering teams investigate consumption
-patterns, explain anomalies, and prioritize optimization opportunities.
-It can answer questions such as why expenditure increased, which
-workspaces or jobs explain the increase, which workloads merit a
-serverless assessment, and which jobs repeatedly fail or retry.
+Engineering-level cost optimization answers why a workload consumes
+resources and what can be changed to improve its efficiency. It does not,
+by itself, answer how platform expenditure should be attributed to
+business units, how shared services should be allocated, or how teams
+should be held accountable against budgets.
 
-A practical design is to provide the agent with curated FinOps data
-rather than unrestricted access to every operational system:
+Those questions require a governed cost model that connects consumption
+to teams, projects and cost centres, together with showback and
+chargeback practices. AI/BI dashboards, Genie and Agentic AI can then
+help stakeholders explore budget variances, investigate cost leakage and
+route evidence-backed recommendations to accountable owners.
 
-```mermaid
-flowchart TD
-    A["Databricks billing and usage system tables"] --> D["Curated FinOps data layer"]
-    B["Query history and compute telemetry"] --> D
-    C["Azure Cost Management exports"] --> D
-    D --> E["AI/BI cost dashboard"]
-    D --> F["Governed FinOps Agent"]
-    E --> G["Engineering and platform teams"]
-    F --> G
-    G --> H["Review, approve and track actions"]
-```
-
-The dashboard remains the primary monitoring and reporting surface.
-The agent adds an investigative interface: it summarizes evidence,
-identifies likely causes, compares workloads, and recommends next
-steps. Start with read-only access, governed Unity Catalog permissions,
-and evidence-backed responses linked to source records. Keep production
-changes—such as resizing compute, changing policies, or terminating
-resources—subject to an authorized engineer's approval. Record each
-recommendation, decision, owner, and outcome.
-
-**Treat Genie as a costed workload, not just a user interface.** Genie
-LLM consumption can be identified in `system.billing.usage` using
-`billing_origin_product = 'GENIE'`. Usage metadata can help segment
-consumption by Genie surface, such as Genie Code, Genie One, or Genie
-Agents, and by channel. Use this to establish consumption by workspace,
-user or service principal, SKU, and time period. Billing records are
-not real-time, so use them for monitoring and reconciliation rather than
-live request metering.
-
-Genie consumption is only one part of the cost. SQL generated by Genie
-runs on a SQL Warehouse, and that warehouse compute is billed
-separately. Genie budgets cover LLM usage; they do not include the SQL
-Warehouse compute used to execute generated queries. Use
-`system.query.history` and its `query_source.genie_space_id` field to
-identify Genie-originated queries, then examine execution duration,
-bytes read, spill, and the warehouse used. This provides workload
-diagnostics, not an exact per-query dollar charge. Where a warehouse
-serves multiple users or workloads, allocate its cost using a documented
-method and do not present an estimate as invoice-level precision.
-
-For custom agents and model services routed through **Unity Gateway**,
-`system.ai_gateway.usage` provides usage and operational telemetry such
-as requester, service, model, token usage, latency, and status. Use
-service and request tags for team, project, or cost-centre attribution.
-Include the cost of Unity Gateway usage tracking itself, and remember
-that requests bypassing the gateway will not appear in its tracking
-data. External-model spend estimates should be labelled as estimates,
-not invoice-accurate charges.
-
-Include the FinOps Agent's own consumption in the same reporting model:
-model tokens, gateway usage, tool or MCP calls, supporting SQL Warehouse
-activity, and any other compute it invokes. Otherwise, the mechanism
-intended to reduce platform expenditure can become another unmeasured
-cost centre. Review the agent's cost against the value of the
-investigations and actions it enables.
-
-The operating principle is straightforward: **AI can accelerate cost
-analysis, but it must not create a new cost blind spot or make
-unapproved production changes.**
+That broader solution is the focus of the companion article,
+**“Closing the FinOps Gap: Using Serverless, AI/BI, Genie and Agentic AI
+to Control Cloud Costs.”**
 
 ------------------------------------------------------------------------
 
@@ -1058,21 +992,6 @@ immediately, begin with these actions.
 -   [ ] Review budget thresholds and usage alerts.
 -   [ ] Assign ownership for the highest-priority cost findings.
 -   [ ] Define a recurring cost and performance review.
-
-### AI and Genie Cost Visibility
-
--   [ ] Establish a baseline for Genie consumption by workspace, user or
-    service principal, SKU, and Genie surface.
--   [ ] Identify Genie-originated SQL through
-    `system.query.history` and `query_source.genie_space_id`.
--   [ ] Review SQL Warehouse expenditure associated with Genie queries
-    separately from Genie LLM consumption.
--   [ ] Track custom model and agent usage through Unity Gateway where
-    requests are routed through it.
--   [ ] Include Unity Gateway tracking charges and the FinOps Agent's
-    own model, tool, and compute consumption in the cost model.
--   [ ] Add Genie and AI consumption to the AI/BI FinOps dashboard, with
-    clear labels for measured usage and estimated cost allocations.
 
 Not every recommendation should be implemented immediately. Prioritize
 changes based on expected benefit, operational risk, and SLA
@@ -1119,7 +1038,7 @@ FinOps.
 
 ## References and Further Reading
 
-The following Microsoft and Databricks documentation was checked on 20 November 2026. Feature availability, pricing, and preview status can change; readers should recheck the relevant page for their Azure region, workspace plan, and SKU before implementation.
+The following Microsoft, Databricks and FinOps Foundation documentation supports the engineering and compute guidance in this article. Feature availability, pricing and preview status can change; readers should recheck the relevant page for their Azure region, workspace plan and SKU before implementation.
 
 1. [Azure Databricks — Compute selection recommendations](https://learn.microsoft.com/en-us/azure/databricks/compute/choose-compute)
 2. [Azure Databricks — Configure compute for jobs](https://learn.microsoft.com/en-us/azure/databricks/jobs/compute)
@@ -1138,13 +1057,6 @@ The following Microsoft and Databricks documentation was checked on 20 November 
 15. [FinOps Foundation — FinOps Framework](https://www.finops.org/framework/)
 16. [Azure Databricks — System tables reference and access controls](https://learn.microsoft.com/en-us/azure/databricks/admin/system-tables/)
 17. [Azure Databricks — Delta feature compatibility and protocols](https://learn.microsoft.com/en-us/azure/databricks/tables/features/feature-compatibility)
-18. [Azure Databricks — Monitor Genie costs](https://learn.microsoft.com/en-us/azure/databricks/genie/monitor-cost)
-19. [Azure Databricks — Genie consumption guide](https://learn.microsoft.com/en-us/azure/databricks/genie/consumption-guide)
-20. [Azure Databricks — Genie budgets](https://learn.microsoft.com/en-us/azure/databricks/genie/budgets)
-21. [Azure Databricks — Query history system table](https://learn.microsoft.com/en-us/azure/databricks/admin/system-tables/query-history)
-22. [Azure Databricks — Unity Gateway usage tracking](https://learn.microsoft.com/en-us/azure/databricks/ai-gateway/usage-tracking)
-23. [Azure Databricks — Unity Gateway observability](https://learn.microsoft.com/en-us/azure/databricks/ai-gateway/observability)
-24. [Databricks — Introducing Unity Gateway Insights](https://www.databricks.com/blog/introducing-unity-gateway-insights)
 
 ---
 
